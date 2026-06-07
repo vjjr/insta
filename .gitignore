@@ -1,0 +1,10 @@
+# Instagram data exports — never commit your personal data
+*.zip
+instagram-*/
+connections/
+
+# instaloader saved sessions (contain auth cookies)
+session-*
+
+__pycache__/
+*.pyc
