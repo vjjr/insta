@@ -56,6 +56,56 @@ def _usernames_from_string_list(entries):
             yield name.strip().lower()
 
 
+def prompt_open_urls(urls):
+    """Prompt the user to open the non-following accounts in Chrome or Brave."""
+    if not urls:
+        return
+
+    print("  Would you like to open these profiles in your browser?")
+    print("    1) Open all in Google Chrome")
+    print("    2) Open all in Brave Browser")
+    print("    3) Open in batches of 10 in Google Chrome")
+    print("    4) Open in batches of 10 in Brave Browser")
+    print("    5) Do not open")
+    print()
+
+    try:
+        choice = input("  Enter choice (1-5): ").strip()
+    except (KeyboardInterrupt, EOFError):
+        print("\n  Cancelled.")
+        return
+
+    if choice not in ("1", "2", "3", "4"):
+        print("  Not opening any profiles.")
+        return
+
+    browser = "Brave Browser" if choice in ("2", "4") else "Google Chrome"
+    is_batched = choice in ("3", "4")
+
+    import subprocess
+    if is_batched:
+        batch_size = 10
+        for i in range(0, len(urls), batch_size):
+            batch = urls[i : i + batch_size]
+            print(f"\n  Opening profiles {i + 1} to {min(i + batch_size, len(urls))} of {len(urls)} in a new {browser} window...")
+            
+            # Open the batch in a new window
+            cmd = ["open", "-na", browser, "--args", "--new-window"] + batch
+            subprocess.run(cmd)
+            
+            if i + batch_size < len(urls):
+                try:
+                    cont = input("  Press Enter to open the next batch (or 'q' to quit): ").strip().lower()
+                    if cont == 'q':
+                        break
+                except (KeyboardInterrupt, EOFError):
+                    break
+    else:
+        print(f"\n  Opening all {len(urls)} profiles in a new {browser} window...")
+        cmd = ["open", "-na", browser, "--args", "--new-window"] + urls
+        subprocess.run(cmd)
+
+
 def report(following, followers):
     """Print the set of accounts you follow that don't follow you back."""
     not_following_back = sorted(following - followers)
@@ -76,6 +126,10 @@ def report(following, followers):
         print(f"  {name}")
         print(f"      https://www.instagram.com/{name}/")
     print()
+
+    urls = [f"https://www.instagram.com/{name}/" for name in not_following_back]
+    prompt_open_urls(urls)
+
 
 
 # --------------------------------------------------------------------------- #
