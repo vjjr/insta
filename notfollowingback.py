@@ -159,6 +159,7 @@ def _extract_following(data):
 
 def _iter_files(path):
     """Yield (filename, raw_bytes) from a ZIP, a directory, or a single file."""
+    path = os.path.expanduser(path)
     if zipfile.is_zipfile(path):
         with zipfile.ZipFile(path) as zf:
             for name in zf.namelist():
